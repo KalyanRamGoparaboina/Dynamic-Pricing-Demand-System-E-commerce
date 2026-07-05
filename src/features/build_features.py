@@ -160,6 +160,10 @@ def run(save: bool = True) -> pd.DataFrame:
     print("[build_features] Building lag-safe feature set...")
     features_df = add_features(panel)
     
+    # Map descriptions back to features panel
+    sku_desc_map = df.groupby("sku")["description"].first().to_dict()
+    features_df["description"] = features_df["sku"].map(sku_desc_map)
+    
     # Drop rows without sufficient history (e.g. earliest week has lag NaNs filled, but let's keep all and validate)
     assert not features_df[FEATURE_COLS + [TARGET_COL]].isna().any().any(), "NaNs in features or target!"
     
