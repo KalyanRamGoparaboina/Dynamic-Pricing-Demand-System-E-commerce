@@ -68,34 +68,37 @@ def run() -> None:
         
     # Generate local explanation for a high-demand prediction
     try:
-        plt.figure(figsize=(10, 4))
         # Pick a row
         idx = 0
-        if hasattr(explainer, "expected_value"):
-            exp_val = explainer.expected_value
-            if isinstance(exp_val, (list, np.ndarray)) and len(exp_val) > 1:
-                exp_val = exp_val[0]
-                
-            shap_val_row = shap_values[idx]
-            if isinstance(shap_val_row, list):
-                shap_val_row = shap_val_row[0]
-                
-            shap.plots._waterfall.waterfall_legacy(
-                exp_val,
-                shap_val_row,
-                feature_names=FEATURE_COLS,
-                max_display=10,
-                show=False
-            )
-            plt.title("SHAP Local Explanation (Waterfall Plot)", fontsize=12, fontweight="bold")
-            plt.tight_layout()
+        shap_val_row = shap_values[idx]
+        if isinstance(shap_val_row, list):
+            shap_val_row = shap_val_row[0]
             
-            local_path = FIGURES / "shap_local_waterfall.png"
-            plt.savefig(local_path, dpi=150)
-            plt.close()
-            print(f"[explain] Saved local SHAP waterfall plot to {local_path}")
+        # Create a clean DataFrame of SHAP values for the features
+        df_local = pd.DataFrame({
+            "Feature": FEATURE_COLS,
+            "SHAP Value": shap_val_row
+        })
+        df_local["Absolute Value"] = df_local["SHAP Value"].abs()
+        df_local = df_local.sort_values("Absolute Value", ascending=True)
+        
+        # Color red for positive contributions to demand, blue for negative contributions
+        colors = ["#f97316" if val >= 0 else "#0ea5e9" for val in df_local["SHAP Value"]]
+        
+        plt.figure(figsize=(10, 5))
+        plt.barh(df_local["Feature"], df_local["SHAP Value"], color=colors, height=0.6)
+        plt.axvline(0, color="white", linestyle="--", alpha=0.5)
+        plt.title("SHAP Local Feature Attribution", fontsize=12, fontweight="bold")
+        plt.xlabel("SHAP Value (Impact on predicted quantity)")
+        plt.grid(True, linestyle=":", alpha=0.3)
+        plt.tight_layout()
+        
+        local_path = FIGURES / "shap_local_waterfall.png"
+        plt.savefig(local_path, dpi=150)
+        plt.close()
+        print(f"[explain] Saved local SHAP waterfall plot replacement to {local_path}")
     except Exception as e:
-        print(f"[explain WARNING] Failed to generate SHAP local waterfall plot: {e}")
+        print(f"[explain WARNING] Failed to generate local SHAP attribution plot: {e}")
         plt.close()
 
 
