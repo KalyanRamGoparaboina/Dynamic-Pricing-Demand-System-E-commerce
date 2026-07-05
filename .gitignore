@@ -1,0 +1,30 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Data directories (exclude raw dataset and processed parquets/DBs)
+data/raw/
+data/processed/
+models_artifacts/
+mlruns/
+
+# Testing / Coverage
+.pytest_cache/
+.coverage
+htmlcov/
+*.log
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
